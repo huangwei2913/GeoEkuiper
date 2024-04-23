@@ -1,0 +1,79 @@
+// Copyright 2021-2022 EMQ Technologies Co., Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package store
+
+import (
+	"fmt"
+
+	"github.com/lf-edge/ekuiper/internal/conf"
+	"github.com/lf-edge/ekuiper/internal/pkg/store/definition"
+)
+
+func SetupDefault() error {
+	dir, err := conf.GetDataLoc()
+	if err != nil {
+		return err
+	}
+
+	c := definition.Config{
+		Type:  "sqlite",
+		Redis: definition.RedisConfig{},
+		Sqlite: definition.SqliteConfig{
+			Path: dir,
+			Name: "",
+		},
+	}
+
+	return Setup(c)
+}
+
+func SetupWithKuiperConfig(kconf *conf.KuiperConf) error {
+	dir, err := conf.GetDataLoc()
+
+	if err != nil {
+		return err
+	}
+	msg1 := fmt.Sprintf("conf.GetDataLoc()., .kconf.Store.Type..................... %s, %s, %s \n", dir, kconf.Store.Type, kconf.Store.Sqlite.Name)
+	fmt.Printf(msg1)
+	c := definition.Config{
+		Type: kconf.Store.Type,
+		Redis: definition.RedisConfig{
+			Host:     kconf.Store.Redis.Host,
+			Port:     kconf.Store.Redis.Port,
+			Password: kconf.Store.Redis.Password,
+			Timeout:  kconf.Store.Redis.Timeout,
+		},
+		Sqlite: definition.SqliteConfig{
+			Path: dir,
+			Name: kconf.Store.Sqlite.Name,
+		},
+	}
+	return Setup(c)
+}
+
+func Setup(config definition.Config) error {
+	s, err := newStores(config, "sqliteKV.db")
+	if err != nil {
+		return err
+	}
+	globalStores = s
+	s, err = newStores(config, "cache.db")
+	if err != nil {
+		return err
+	}
+	fmt.Println("is this Setup runned.................................................")
+	cacheStores = s
+	return nil
+}
