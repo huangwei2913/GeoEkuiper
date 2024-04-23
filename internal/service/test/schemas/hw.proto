@@ -1,0 +1,91 @@
+// Copyright 2021 EMQ Technologies Co., Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+option go_package = "grpc/helloworld";
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+
+package helloworld;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello(HelloRequest) returns (HelloReply) {}
+  rpc Compute (InferRequest) returns (Response) {}
+  // Primitive type param. Not supported for rest json
+  rpc get_feature(google.protobuf.BytesValue) returns(FeatureResponse) {}
+  rpc object_detection(ObjectDetectionRequest) returns(ObjectDetectionResponse) {}
+  rpc getStatus(google.protobuf.Empty) returns(google.protobuf.BoolValue) {}
+  rpc RestEncodedJson(google.protobuf.StringValue) returns(google.protobuf.StringValue) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+
+message Response {
+  uint32 code = 1;
+  string msg = 2;
+}
+
+message InferRequest {
+  string rid = 1;
+  string uuid = 2;
+  string outlet = 3;
+
+  string path = 4;
+  bytes data = 5;
+  string extra = 6;
+}
+
+message Box{
+  int32 x = 1;
+  int32 y = 2;
+  int32 w = 3;
+  int32 h = 4;
+}
+
+message FeatureResult{
+  repeated float features = 1;
+  Box box = 2;
+}
+
+message FeatureResponse{
+  repeated FeatureResult feature = 1;
+}
+
+message ObjectDetectionRequest {
+  string cmd = 1;
+  string base64_img = 2 [json_name="base64_img"];
+}
+
+message ObjectDetectionResponse {
+  string info = 1;
+  int32 code = 2;
+  string image = 3;
+  string result = 4;
+  string type = 5;
+}
